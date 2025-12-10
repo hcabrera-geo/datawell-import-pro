@@ -1,4 +1,5 @@
-import { autoUpdater } from 'electron-updater';
+import pkg from 'electron-updater';
+const { autoUpdater } = pkg;
 import { app, BrowserWindow, ipcMain } from 'electron';
 import log from 'electron-log';
 
