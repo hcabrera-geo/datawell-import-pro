@@ -237,9 +237,19 @@ export function initializeUpdater(window) {
         return { success: false, message: 'No hay actualización disponible' };
       }
       
+      log.info('Starting autoUpdater check before download...');
+      
+      // First, let autoUpdater check for updates (this populates its internal state)
+      const checkResult = await autoUpdater.checkForUpdates();
+      log.info('autoUpdater check result:', checkResult);
+      
+      if (!checkResult || !checkResult.updateInfo) {
+        throw new Error('autoUpdater no encontró actualización');
+      }
+      
       log.info('Starting download via autoUpdater...');
       
-      // Use electron-updater to download (requires latest.yml in GitHub release)
+      // Now download (autoUpdater knows about the update)
       await autoUpdater.downloadUpdate();
       
       if (mainWindow) {
