@@ -19,11 +19,16 @@ Object.assign(console, log.functions);
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
 
-// IMPORTANT: Disable autoUpdater's automatic checking since we use custom REST API
+// Configure autoUpdater for GitHub releases
+autoUpdater.setFeedURL({
+  provider: 'github',
+  owner: 'hcabrera-geo',
+  repo: 'datawell-import-pro'
+});
+
+// IMPORTANT: Disable autoUpdater's automatic checking since we use custom REST API for detection
 autoUpdater.autoDownload = false;
-autoUpdater.autoInstallOnAppQuit = false;
-// Explicitly disable the periodic update check that runs every 1 hour by default
-// by setting checkForUpdatesAndNotify to null
+autoUpdater.autoInstallOnAppQuit = true;
 
 let mainWindow = null;
 let updateAvailable = false;
@@ -162,9 +167,49 @@ export function initializeUpdater(window) {
     });
   }, 60 * 60 * 1000);
 
-  // NOTE: autoUpdater event handlers are DISABLED
-  // We use custom REST API implementation instead to avoid conflicts
-  // Do NOT add autoUpdater.on() listeners here
+  // NOTE: Now we enable autoUpdater event handlers for download and install
+  
+  autoUpdater.on('update-available', (info) => {
+    log.info('Update available:', info);
+    updateAvailable = true;
+  });
+
+  autoUpdater.on('update-not-available', (info) => {
+    log.info('Update not available:', info);
+  });
+
+  autoUpdater.on('download-progress', (progressObj) => {
+    log.info('Download progress:', progressObj.percent);
+    if (mainWindow) {
+      mainWindow.webContents.send('update-progress', {
+        percent: progressObj.percent,
+        transferred: progressObj.transferred,
+        total: progressObj.total
+      });
+    }
+  });
+
+  autoUpdater.on('update-downloaded', (info) => {
+    log.info('Update downloaded:', info);
+    updateDownloaded = true;
+    if (mainWindow) {
+      mainWindow.webContents.send('update-status', {
+        status: 'downloaded',
+        message: 'Actualización descargada. Reinicia la aplicación para instalarla.',
+        version: info.version
+      });
+    }
+  });
+
+  autoUpdater.on('error', (err) => {
+    log.error('Update error:', err);
+    if (mainWindow) {
+      mainWindow.webContents.send('update-status', {
+        status: 'error',
+        message: `Error en la actualización: ${err.message}`
+      });
+    }
+  });
 
   // --- IPC HANDLERS ---
 
@@ -187,21 +232,53 @@ export function initializeUpdater(window) {
   });
 
   ipcMain.handle('update-download', async () => {
-    // Download via electron-updater requires latest.yml; provide clear response instead of failing silently
-    if (!updateAvailable) {
-      return { success: false, message: 'No hay actualización disponible' };
+    try {
+      if (!updateAvailable) {
+        return { success: false, message: 'No hay actualización disponible' };
+      }
+      
+      log.info('Starting download via autoUpdater...');
+      
+      // Use electron-updater to download (requires latest.yml in GitHub release)
+      await autoUpdater.downloadUpdate();
+      
+      if (mainWindow) {
+        mainWindow.webContents.send('update-status', {
+          status: 'downloading',
+          message: 'Descargando actualización...'
+        });
+      }
+      
+      return { success: true, message: 'Descarga iniciada' };
+    } catch (error) {
+      log.error('Download error:', error);
+      return { 
+        success: false, 
+        message: `Error al descargar: ${error.message}` 
+      };
     }
-    return {
-      success: false,
-      message: 'Descarga automática no configurada (falta latest.yml en la release)'
-    };
   });
 
   ipcMain.handle('update-install', () => {
-    return {
-      success: false,
-      message: 'Instalación automática no disponible en esta versión'
-    };
+    try {
+      if (!updateDownloaded) {
+        return {
+          success: false,
+          message: 'No hay actualización descargada para instalar'
+        };
+      }
+      
+      log.info('Installing update and quitting...');
+      autoUpdater.quitAndInstall(false, true);
+      
+      return { success: true, message: 'Instalando actualización...' };
+    } catch (error) {
+      log.error('Install error:', error);
+      return {
+        success: false,
+        message: `Error al instalar: ${error.message}`
+      };
+    }
   });
 
   ipcMain.handle('update-status', () => {
