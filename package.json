@@ -1,7 +1,7 @@
 {
   "name": "datawell-import-pro",
   "private": true,
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "electron/main.js",
   "type": "module",
   "scripts": {
@@ -37,7 +37,7 @@
   },
   "build": {
     "appId": "com.datawell.app",
-    "productName": "DataWell Pro",
+    "productName": "DataWell-Pro",
     "files": [
       "dist/**/*",
       "electron/**/*",
@@ -52,6 +52,7 @@
       "owner": "hcabrera-geo",
       "repo": "datawell-import-pro"
     },
+    "artifactName": "${productName}-Setup-${version}.${ext}",
     "win": {
       "target": [
         {
@@ -63,6 +64,7 @@
       ]
     },
     "nsis": {
+      "artifactName": "${productName}-Setup-${version}.${ext}",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
