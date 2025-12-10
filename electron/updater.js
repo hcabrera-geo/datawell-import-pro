@@ -3,6 +3,15 @@ const { autoUpdater } = pkg;
 import { app, BrowserWindow, ipcMain } from 'electron';
 import log from 'electron-log';
 
+// Catch unhandled promise rejections globally in main process and log them
+process.on('unhandledRejection', (reason, p) => {
+  try {
+    log.error('Unhandled Rejection at:', p, 'reason:', reason);
+  } catch (e) {
+    console.error('Unhandled Rejection:', reason, p);
+  }
+});
+
 // Configure logger
 Object.assign(console, log.functions);
 autoUpdater.logger = log;
@@ -16,7 +25,26 @@ export function initializeUpdater(window) {
   mainWindow = window;
 
   // Configure update settings
-  autoUpdater.checkForUpdatesAndNotify();
+  try {
+    // call checkForUpdatesAndNotify and catch internal promise rejections
+    autoUpdater.checkForUpdatesAndNotify().catch((err) => {
+      log.error('Updater check failed (caught):', err);
+      if (mainWindow) {
+        mainWindow.webContents.send('update-status', {
+          status: 'error',
+          message: err?.message || String(err)
+        });
+      }
+    });
+  } catch (err) {
+    log.error('Updater initialization error:', err);
+    if (mainWindow) {
+      mainWindow.webContents.send('update-status', {
+        status: 'error',
+        message: err?.message || String(err)
+      });
+    }
+  }
 
   // Check for updates every hour
   setInterval(() => {
