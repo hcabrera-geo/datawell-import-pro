@@ -44,7 +44,7 @@
       "package.json"
     ],
     "directories": {
-      "output": "release-temp",
+      "output": "release",
       "buildResources": "assets"
     },
     "publish": {
