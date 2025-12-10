@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import UpdateNotification from './components/UpdateNotification';
+import LoadingScreen from './components/LoadingScreen';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Wells from './pages/Wells';
@@ -16,6 +17,16 @@ import { User } from './types';
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading time (database initialization, etc.)
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000); // 2 seconds loading screen
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleLogin = (u: User) => {
     setUser(u);
@@ -25,6 +36,10 @@ function App() {
   const handleLogout = () => {
     setUser(null);
   };
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   if (!user) {
     return <Login onLogin={handleLogin} />;

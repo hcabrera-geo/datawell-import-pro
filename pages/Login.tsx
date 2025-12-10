@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User } from '../types';
 import { Droplet, Loader2 } from 'lucide-react';
 import { authenticateUser } from '../services/dataService';
@@ -12,6 +12,18 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [appVersion, setAppVersion] = useState('1.0.7');
+
+  useEffect(() => {
+    // Get app version from Electron
+    if (window.electronAPI) {
+      window.electronAPI.getAppVersion().then((version: string) => {
+        setAppVersion(version);
+      }).catch((err) => {
+        console.error('Error getting app version:', err);
+      });
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,7 +92,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         </form>
         
         <div className="mt-4 text-center text-xs text-gray-400">
-           DataWell PRO Systems v1.0.6
+           DataWell PRO Systems v{appVersion}
         </div>
       </div>
     </div>
