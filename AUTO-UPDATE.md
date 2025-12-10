@@ -35,7 +35,7 @@ Se ha implementado un sistema completo de actualizaciones automáticas usando `e
    - Ve a Settings → Developer Settings → Personal Access Tokens
    - Crea un token con permisos `repo` y `releases`
    - Guarda el token como `GH_TOKEN` en tus variables de entorno
-   - TOKEN: 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
+   - **NOTA:** No compartas tu token en repositorios públicos. Úsalo solo en variables de entorno locales o secretos de GitHub Actions.
 
 4. Sube tu código a GitHub:
 ```bash
