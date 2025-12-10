@@ -3,7 +3,7 @@ import initSqlJs from 'sql.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { initializeUpdater, checkForUpdatesOnStartup } from './updater.js';
+import { initializeUpdater } from './updater.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -192,7 +192,7 @@ function createWindow() {
 app.whenReady().then(async () => {
   await initDatabase();
   createWindow();
-  checkForUpdatesOnStartup();
+  // Initialize updater with custom REST API implementation
   if (mainWindow) {
     initializeUpdater(mainWindow);
   }
