@@ -223,10 +223,19 @@ ipcMain.handle('db-get-users', () => {
 });
 
 ipcMain.handle('db-save-user', (_, user) => {
-  executeDatabase(
-    'INSERT OR REPLACE INTO app_users (id, username, password, role) VALUES (?, ?, ?, ?)',
-    [user.id, user.username, user.password, user.role]
-  );
+  if (user.id) {
+    // Update existing user
+    executeDatabase(
+      'UPDATE app_users SET username = ?, password = ?, role = ? WHERE id = ?',
+      [user.username, user.password, user.role, user.id]
+    );
+  } else {
+    // Insert new user
+    executeDatabase(
+      'INSERT INTO app_users (username, password, role) VALUES (?, ?, ?)',
+      [user.username, user.password, user.role]
+    );
+  }
 });
 
 ipcMain.handle('db-delete-user', (_, id) => {
@@ -404,4 +413,13 @@ ipcMain.handle('db-delete-file', (_, fileName) => {
       seen.add(key);
     }
   }
+});
+
+// APP INFO
+ipcMain.handle('app-version', () => {
+  return app.getVersion();
+});
+
+ipcMain.handle('db-path', () => {
+  return dbPath;
 });

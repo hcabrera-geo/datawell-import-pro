@@ -128,6 +128,18 @@ declare global {
       getUpdateStatus: () => Promise<any>;
       onUpdateStatus: (callback: (data: any) => void) => void;
       onUpdateProgress: (callback: (data: any) => void) => void;
+
+      // App Info
+      getAppVersion: () => Promise<string>;
+      getDatabasePath: () => Promise<string>;
+    }
+    electron?: {
+      checkForUpdates: () => Promise<any>;
+      downloadUpdate: () => Promise<any>;
+      installUpdate: () => Promise<any>;
+      onUpdateStatus: (callback: (data: any) => void) => void;
+      getAppVersion: () => Promise<string>;
+      getDatabasePath: () => Promise<string>;
     }
   }
 }

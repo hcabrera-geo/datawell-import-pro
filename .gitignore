@@ -25,6 +25,7 @@ dist-ssr
 
 # Build output - exclude large compiled files
 release/
+release-temp/
 build/
 out/
 

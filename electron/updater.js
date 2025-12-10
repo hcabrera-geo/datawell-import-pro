@@ -170,11 +170,13 @@ export function initializeUpdater(window) {
 
   ipcMain.handle('update-check', async () => {
     try {
-      const result = await autoUpdater.checkForUpdates();
+      // Use custom REST API (avoids latest.yml requirement)
+      const result = await checkForUpdatesViaRestAPI();
       return {
-        updateAvailable: result?.updateInfo ? true : false,
-        currentVersion: app.getVersion(),
-        version: result?.updateInfo?.version || null
+        updateAvailable: result?.available || false,
+        version: result?.version || null,
+        releaseUrl: result?.releaseUrl || null,
+        currentVersion: app.getVersion()
       };
     } catch (error) {
       return {
@@ -185,23 +187,21 @@ export function initializeUpdater(window) {
   });
 
   ipcMain.handle('update-download', async () => {
+    // Download via electron-updater requires latest.yml; provide clear response instead of failing silently
     if (!updateAvailable) {
       return { success: false, message: 'No hay actualización disponible' };
     }
-    try {
-      await autoUpdater.downloadUpdate();
-      return { success: true, message: 'Descargando actualización...' };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
+    return {
+      success: false,
+      message: 'Descarga automática no configurada (falta latest.yml en la release)'
+    };
   });
 
   ipcMain.handle('update-install', () => {
-    if (updateDownloaded) {
-      autoUpdater.quitAndInstall();
-      return { success: true };
-    }
-    return { success: false, message: 'Actualización no descargada' };
+    return {
+      success: false,
+      message: 'Instalación automática no disponible en esta versión'
+    };
   });
 
   ipcMain.handle('update-status', () => {

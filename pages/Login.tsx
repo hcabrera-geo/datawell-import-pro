@@ -80,7 +80,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         </form>
         
         <div className="mt-4 text-center text-xs text-gray-400">
-           DataWell Systems v1.1
+           DataWell Systems v1.0.3
         </div>
       </div>
     </div>

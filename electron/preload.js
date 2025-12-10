@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   // Users
@@ -39,5 +39,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
   installUpdate: () => ipcRenderer.invoke('update-install'),
   getUpdateStatus: () => ipcRenderer.invoke('update-status'),
   onUpdateStatus: (callback) => ipcRenderer.on('update-status', (_, data) => callback(data)),
-  onUpdateProgress: (callback) => ipcRenderer.on('update-progress', (_, data) => callback(data))
+  onUpdateProgress: (callback) => ipcRenderer.on('update-progress', (_, data) => callback(data)),
+
+  // App Info
+  getAppVersion: () => ipcRenderer.invoke('app-version'),
+  getDatabasePath: () => ipcRenderer.invoke('db-path')
+});
+
+// Also expose as 'electron' for compatibility with Config page
+contextBridge.exposeInMainWorld('electron', {
+  checkForUpdates: () => ipcRenderer.invoke('update-check'),
+  downloadUpdate: () => ipcRenderer.invoke('update-download'),
+  installUpdate: () => ipcRenderer.invoke('update-install'),
+  onUpdateStatus: (callback) => ipcRenderer.on('update-status', (_, data) => callback(data)),
+  getAppVersion: () => ipcRenderer.invoke('app-version'),
+  getDatabasePath: () => ipcRenderer.invoke('db-path')
 });
